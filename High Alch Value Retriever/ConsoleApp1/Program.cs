@@ -25,12 +25,7 @@ namespace ConsoleApp1
 
             Console.ReadLine();
             
-
-
-
-
-
-
+            
         }
 
         public static void WriteToNewFile()
@@ -47,10 +42,10 @@ namespace ConsoleApp1
 
                 sb.Append("\"id\": " + ro.id+ ",");
                 sb.Append("\"name\": \"" + ro.name + "\",");
-                sb.Append("\alch_value\": " + ro.alch_value);
+                sb.Append("\"Salch_value\": " + ro.alch_value);
 
 
-                sb.Append("}");
+                sb.Append("},");
             }
 
             sb.Append("]");
@@ -136,37 +131,67 @@ namespace ConsoleApp1
             var json_data = string.Empty;
             string url = "http://oldschoolrunescape.wikia.com/wiki/" + name;
             Console.WriteLine(url);
-            json_data = w.DownloadString(url);
+            try
+            {
+                json_data = w.DownloadString(url);
+            }
+            catch (Exception)
+            {
+                return -1;
+            }
+            
 
 
             //Console.WriteLine(json_data);
 
             if (json_data.Contains("title=\"High Level Alchemy\">"))
             {
+                if(json_data.Contains("Cannot be alchemised"))
+                {
+                    return -1;
+                }
                 Console.WriteLine("There is a value");
                 string high_alchvalue = String.Empty;
-                string[] splitString = json_data.Split(new string[] { "title=\"High Level Alchemy\">High Alch</a>\n</th><td> " }, StringSplitOptions.None);
+                json_data = json_data.ToLower();
+                string[] splitString = json_data.Split(new string[] { "title=\"high level alchemy\">high alch</a>" }, StringSplitOptions.None);
                 string[] theValue = splitString[1].Split(new string[] { "&#160;" }, StringSplitOptions.None);
-                string value= theValue[0];
+                string value= theValue[0].Replace("</th><td>","");
                 value.Trim();
                 Console.WriteLine(value);
                 value = value.Replace(",", "");
-                if (value.Contains("Unknown") || value.Contains("doses"))
+                if (value.Contains("unknown") || value.Contains("dose")|| value.Contains("-"))
                 {
                     Console.WriteLine("Item can't be high alched");
                     return -1;
-                }else if (value.Contains("Clean:"))
+                } else if (value.Contains("clean:"))
                 {
-                    value = value.Replace("Clean: ", "");
+                    value = value.Replace("clean: ", "");
                     string[] temp = value.Split(new string[] { "coins" }, StringSplitOptions.None);
-                    value = temp[0];
-                    return Int32.Parse(value);
+                    value = temp[0].Trim();
+                    if (Int32.Parse(value) > 200)
+                    {
+                        return Int32.Parse(value);
+                    }
+
+                }else if (value.Contains("whole:"))
+                {
+                    value = value.Replace("whole: ", "");
+                    string[] temp = value.Split(new string[] { "coins" }, StringSplitOptions.None);
+                    value = temp[0].Trim();
+                    if (Int32.Parse(value) > 200)
+                    {
+                        return Int32.Parse(value);
+                    }
+
                 }
                 else
                 {
                     
-                    Console.WriteLine(value);
-                    return Int32.Parse(value);
+                    if (Int32.Parse(value) > 200)
+                    {
+                        return Int32.Parse(value);
+                    }
+                    
                 }
 
     
